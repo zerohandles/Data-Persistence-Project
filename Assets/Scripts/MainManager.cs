@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using System.IO;
+using TMPro;
 
 public class MainManager : MonoBehaviour
 {
@@ -11,14 +13,24 @@ public class MainManager : MonoBehaviour
     public Rigidbody Ball;
 
     public Text ScoreText;
+    public Text highScoreText;
+    public TextMeshProUGUI newHighScoreText;
     public GameObject GameOverText;
-    
+
     private bool m_Started = false;
     private int m_Points;
-    
+    private int highScore;
+
     private bool m_GameOver = false;
 
-    
+    [System.Serializable]
+    class SaveData
+    {
+        public string name;
+        public int score;
+    }
+        
+
     // Start is called before the first frame update
     void Start()
     {
@@ -36,6 +48,7 @@ public class MainManager : MonoBehaviour
                 brick.onDestroyed.AddListener(AddPoint);
             }
         }
+        LoadHighScore();
     }
 
     private void Update()
@@ -72,5 +85,47 @@ public class MainManager : MonoBehaviour
     {
         m_GameOver = true;
         GameOverText.SetActive(true);
+        if (m_Points > highScore)
+        {
+            SaveHighscore();
+            ShowNewHighScoreMessage();
+        }
+    }
+
+    void SaveHighscore()
+    {
+        SaveData data = new SaveData
+        {
+            score = m_Points,
+            name = PlayerData.playerName
+        };
+
+        string json = JsonUtility.ToJson(data);
+
+        File.WriteAllText(Application.persistentDataPath + "/highscore.json", json);
+    }
+
+    void LoadHighScore()
+    {
+        string path = Application.persistentDataPath + "/highscore.json";
+        if (File.Exists(path))
+        {
+            string json = File.ReadAllText(path);
+            SaveData data = JsonUtility.FromJson<SaveData>(json);
+
+            highScore = data.score;
+
+            highScoreText.text = $"High Score: {data.name} - {data.score} points!";
+        }
+        else
+        {
+            highScoreText.text = "No High Score yet!";
+        }
+    }
+
+    void ShowNewHighScoreMessage()
+    {
+        highScoreText.text = $"High Score: {PlayerData.playerName} - {m_Points} points!";
+        newHighScoreText.gameObject.SetActive(true);
     }
 }
