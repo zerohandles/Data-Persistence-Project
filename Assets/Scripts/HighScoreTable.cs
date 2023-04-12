@@ -14,48 +14,56 @@ public class HighScoreTable : MonoBehaviour
 
     private string SavePath => $"{Application.persistentDataPath}/highscores.json";
 
+
+    // Get existing highscore data and update the UI on when scene starts
     private void Start()
     {
         ScoreboardSavedData savedScores =  GetSavedScores();
-
-        SaveScores(savedScores);
-
         UpdateUI(savedScores);
     }
 
+    // Retrieves the existing highscore data 
     public ScoreboardSavedData GetSavedScores()
     {
+        // If there is no highscores file present, return a new ScoreboardSavedData object
         if (!File.Exists(SavePath))
         {
             File.Create(SavePath).Dispose();
             return new ScoreboardSavedData();
         }
 
+        // Read through the existing highscores json file and return them as a ScoreboardSavedData object.
         using StreamReader stream = new StreamReader(SavePath);
         string json = stream.ReadToEnd();
 
-        return JsonUtility.FromJson<ScoreboardSavedData>(json);
+        // If there are no recorded highscores in the file, return a new ScoreboardSavedData to prevent null object reference errors.
+        return JsonUtility.FromJson<ScoreboardSavedData>(json) != null ? JsonUtility.FromJson<ScoreboardSavedData>(json) : new ScoreboardSavedData();
     }
 
+    // Create a highscore entry UI element for each saved highscore
     private void UpdateUI(ScoreboardSavedData savedScores)
     {
+        // Amount of space between each entry
         int scoreOffset = -50;
+
+        // Destroy all existing highscore entry objects
         foreach(Transform child in entryContainer)
         {
             Destroy(child.gameObject);
         }
-        if (savedScores != null)
+
+        // Create a new entry gameobject for each saved highscore entry
+        // Moves new gameobject by offset to avoid all score being stacked up
+        // Initialze each new entry with corresponding savedScores entry data
+        for (int i = 0; i < savedScores.highscores.Count; i++)
         {
-            for (int i = 0; i < savedScores.highscores.Count; i++)
-            {
-                GameObject entry = Instantiate(entryTemplate, entryContainer);
-                entry.transform.Find("RankText").GetComponent<TMP_Text>().text = (i + 1).ToString();
-                entry.transform.localPosition = new Vector3(0, (scoreOffset * i));
-                entry.GetComponent<ScoreboardEntryUI>().InitializeScoreboard(savedScores.highscores[i]);
-            }
+            GameObject entry = Instantiate(entryTemplate, entryContainer);
+            entry.transform.localPosition = new Vector3(0, (scoreOffset * i));
+            entry.GetComponent<ScoreboardEntryUI>().InitializeScoreboard(savedScores.highscores[i], i);
         }
     }
 
+    // Deletes the existing highscores json file and run UpdateUI
     public void ResetLeaderboard()
     {
         if (File.Exists(SavePath))
@@ -68,15 +76,8 @@ public class HighScoreTable : MonoBehaviour
         UpdateUI(savedScores);
     }
 
-    private void SaveScores(ScoreboardSavedData scoreboardSavedData)
-    {
-        using StreamWriter stream = new StreamWriter(SavePath);
-        string json = JsonUtility.ToJson(scoreboardSavedData, true);
-
-        stream.Write(json);
-    }
-
-    public void GoToMenu()
+    // Go to the the main game scene
+    public void GoToGame()
     {
         SceneManager.LoadScene(1);
     }

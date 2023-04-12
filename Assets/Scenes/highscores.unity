@@ -1398,7 +1398,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 410993254}
         m_TargetAssemblyTypeName: HighScoreTable, Assembly-CSharp
-        m_MethodName: GoToMenu
+        m_MethodName: GoToGame
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}

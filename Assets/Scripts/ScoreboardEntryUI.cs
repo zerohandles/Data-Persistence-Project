@@ -8,10 +8,12 @@ using TMPro;
         [SerializeField] TextMeshProUGUI entryScoreText;
         [SerializeField] TextMeshProUGUI entryRankText;
 
-        public void InitializeScoreboard(ScoreboardEntryData scoreboardEntryData)
+        // Set the UI Text elements to match the ScoreboardEntryData.
+        public void InitializeScoreboard(ScoreboardEntryData scoreboardEntryData, int rank)
         {
             entryNameText.text = scoreboardEntryData.playerName;
             entryScoreText.text = scoreboardEntryData.score.ToString();
+            entryRankText.text = (rank + 1).ToString();
         }
     }
 

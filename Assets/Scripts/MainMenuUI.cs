@@ -29,6 +29,7 @@ public class MainMenuUI : MonoBehaviour
         nameField.colors = colors;
     }
 
+    // Exit the application
     public void ExitGame()
     {
 #if UNITY_EDITOR

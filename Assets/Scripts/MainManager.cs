@@ -18,7 +18,7 @@ public class MainManager : MonoBehaviour
     public GameObject GameOverText;
     public GameObject showHighScoreButton;
 
-   [SerializeField] int maxHighScoresEntries = 10;
+    [SerializeField] int maxHighScoresEntries = 10;
     private bool m_Started = false;
     private int m_Points;
     private int highScore;
@@ -27,12 +27,13 @@ public class MainManager : MonoBehaviour
     private string SavePath => $"{Application.persistentDataPath}/highscores.json";
 
 
+    // Provided code, Set initial brick layout and assign points to each. 
     void Start()
     {
         const float step = 0.6f;
         int perLine = Mathf.FloorToInt(4.0f / step);
-        
-        int[] pointCountArray = new [] {1,1,2,2,5,5};
+
+        int[] pointCountArray = new[] { 1, 1, 2, 2, 5, 5 };
         for (int i = 0; i < LineCount; ++i)
         {
             for (int x = 0; x < perLine; ++x)
@@ -43,10 +44,11 @@ public class MainManager : MonoBehaviour
                 brick.onDestroyed.AddListener(AddPoint);
             }
         }
-
-        LoadHighScore();
+        DisplayHighScoreText();
     }
 
+
+    // Provided code, Start the game on Spacebar press.
     private void Update()
     {
         if (!m_Started)
@@ -71,12 +73,17 @@ public class MainManager : MonoBehaviour
         }
     }
 
+
+    // Provided code, undate the onscreen ScoreText UI element
     void AddPoint(int point)
     {
         m_Points += point;
         ScoreText.text = $"Score : {m_Points}";
     }
 
+
+    // Display gameover UI elements.  
+    // Attempt to add the the current score as a new highscore
     public void GameOver()
     {
         m_GameOver = true;
@@ -89,15 +96,20 @@ public class MainManager : MonoBehaviour
             score = m_Points
         };
         AddHighscore(newScore);
-        LoadHighScore();
+        DisplayHighScoreText();
     }
 
+
+    // Add a new highscore to the highscore save file 
     void AddHighscore(ScoreboardEntryData newScore)
     {
         ScoreboardSavedData savedScores = GetSavedScores();
 
         bool scoreAdded = false;
 
+        // Add the new highscore to the savedScores ScoreboardSavedData
+        // only if it is greater than an existing score and break the loop.
+        // Creates a sorted list of scores.
         for (int i = 0; i < savedScores.highscores.Count; i++)
         {
             if (newScore.score > savedScores.highscores[i].score)
@@ -108,25 +120,61 @@ public class MainManager : MonoBehaviour
                 break;
             }
         }
+        // If the score wasn't added to savedScores and the highscore limit hasn't been reached
+        // add the newScore to the savedScores
         if (!scoreAdded && savedScores.highscores.Count < maxHighScoresEntries)
         {
             savedScores.highscores.Add(newScore);
             ShowNewHighScoreMessage();
         }
 
+        // Remove the lowest entries beyond the maxHighScoreEntries limit from the savedScores data.
         if (savedScores.highscores.Count > maxHighScoresEntries)
         {
             savedScores.highscores.RemoveRange(maxHighScoresEntries, savedScores.highscores.Count - maxHighScoresEntries);
         }
-
+        // Save the new savedScores ScoreboardSavedData object.
         SaveScores(savedScores);
     }
 
 
-    void LoadHighScore()
+    // Retrieves the existing highscore data 
+    public ScoreboardSavedData GetSavedScores()
     {
+        // If there is no highscores file present, return a new ScoreboardSavedData object
+        if (!File.Exists(SavePath))
+        {
+            File.Create(SavePath).Dispose();
+            return new ScoreboardSavedData();
+        }
+
+        // Read through the existing highscores json file and return them as a ScoreboardSavedData object.
+        using StreamReader stream = new StreamReader(SavePath);
+        string json = stream.ReadToEnd();
+
+        // If there are no recorded highscores in the file, return a new ScoreboardSavedData to prevent null object reference errors.
+        return JsonUtility.FromJson<ScoreboardSavedData>(json) != null ? JsonUtility.FromJson<ScoreboardSavedData>(json) : new ScoreboardSavedData();
+    }
+
+
+    // Write the ScoreboardSavedData to a json format and save it to locally
+    private void SaveScores(ScoreboardSavedData scoreboardSavedData)
+    {
+        using (StreamWriter stream = new StreamWriter(SavePath))
+        {
+            string json = JsonUtility.ToJson(scoreboardSavedData, true);
+            stream.Write(json);
+        }
+    }
+
+
+    // Display the highest recorded score
+    void DisplayHighScoreText()
+    {
+        // Default value of highScoreText
         highScoreText.text = "No High Score yet!";
 
+        // If a highscores save file exists load it from json into a ScoreboardSavedData object
         if (File.Exists(SavePath))
         {
             using StreamReader stream = new StreamReader(SavePath);
@@ -134,6 +182,7 @@ public class MainManager : MonoBehaviour
 
             ScoreboardSavedData data = JsonUtility.FromJson<ScoreboardSavedData>(json);
 
+            // If the newly loaded ScoreboardSavedData is not empty, set the highscoreText to the first entry. 
             if (data != null)
             {
                 highScore = data.highscores[0].score;
@@ -144,33 +193,15 @@ public class MainManager : MonoBehaviour
         }
     }
 
+
+    // Displays the new high score message in the UI.
     void ShowNewHighScoreMessage()
     {
         newHighScoreText.gameObject.SetActive(true);
     }
 
-    public ScoreboardSavedData GetSavedScores()
-    {
-        if (!File.Exists(SavePath))
-        {
-            File.Create(SavePath).Dispose();
-            return new ScoreboardSavedData();
-        }
 
-        using StreamReader stream = new StreamReader(SavePath);
-        string json = stream.ReadToEnd();
-
-        return JsonUtility.FromJson<ScoreboardSavedData>(json) != null ? JsonUtility.FromJson<ScoreboardSavedData>(json) : new ScoreboardSavedData();
-    }
-    private void SaveScores(ScoreboardSavedData scoreboardSavedData)
-    {
-        using (StreamWriter stream = new StreamWriter(SavePath))
-        {
-            string json = JsonUtility.ToJson(scoreboardSavedData, true);
-            stream.Write(json);
-        }
-    }
-
+    // Load the leaderboard scene
     public void LoadLeaderboard()
     {
         SceneManager.LoadScene(2);

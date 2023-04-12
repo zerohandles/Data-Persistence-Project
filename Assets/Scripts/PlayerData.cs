@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
 
@@ -9,6 +7,7 @@ public class PlayerData : MonoBehaviour
     public TextMeshProUGUI nameField;
     public static string playerName;
 
+    // Mark the first instance of PlayerData as DontDestoyOnLoad, otherwise destroy it.
     private void Awake()
     {
         if (Instance != null)

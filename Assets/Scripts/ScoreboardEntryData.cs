@@ -1,6 +1,7 @@
 using System;
 
 
+// A highscore entry struct1
     [Serializable]
     public struct ScoreboardEntryData
     {
