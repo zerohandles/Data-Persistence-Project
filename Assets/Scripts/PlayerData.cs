@@ -19,8 +19,4 @@ public class PlayerData : MonoBehaviour
         DontDestroyOnLoad(gameObject);
     }
 
-    public void SavePlayerName()
-    {
-        playerName = nameField.text;
-    }
 }

@@ -25,6 +25,7 @@ public class MainManager : MonoBehaviour
 
     private bool m_GameOver = false;
     private string SavePath => $"{Application.persistentDataPath}/highscores.json";
+    [SerializeField] PlayerData playerData;
 
 
     // Provided code, Set initial brick layout and assign points to each. 

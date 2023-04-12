@@ -11,6 +11,7 @@ using UnityEditor;
 public class MainMenuUI : MonoBehaviour
 {
     [SerializeField] TMP_InputField nameField;
+    [SerializeField] PlayerData playerData;
 
     public void StartGame()
     {
@@ -27,6 +28,11 @@ public class MainMenuUI : MonoBehaviour
         var colors = nameField.colors;
         colors.normalColor = Color.red;
         nameField.colors = colors;
+    }
+
+    public void EnterPlayerName()
+    {
+        PlayerData.playerName = nameField.text;
     }
 
     // Exit the application
